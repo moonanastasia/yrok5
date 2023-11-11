@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import requests
+from bs4 import BeautifulSoup
+import lxml
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+user = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+header = {"User-Agent": user}
+session = requests.Session()
 
+for j in range(1, 10):
+    print(f"page = {j}")
+    url = f"https://rozetka.com.ua/mobile-phones/c80003/page={j}"
+    response = session.get(url, headers=header)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, "lxml")
 
+        all_products = soup.find_all('li', class_="catalog-grid__cell catalog-grid__cell_type_slim ng-star-inserted")
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+        for product in all_products:
+            if product.find("div", class_="goods-tile__price--old price--gray ng-star-inserted"):
+                price = product.find('span', class_="goods-tile__price-value")
+                title = product.find("span", class_="goods-tile__title")
+                # print(price.text, title.text)
+                price = price.text.replace(" ", " ")
+                with open("phone.txt", "a", encoding="utf-8") as file:
+                    file.write(f"{price} {title.text}\n")
